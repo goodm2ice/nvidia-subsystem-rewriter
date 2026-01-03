@@ -1,4 +1,3 @@
-#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
 Script for install drivers on NVIDIA card with broken SUBSYS value.
@@ -26,16 +25,26 @@ Path to executable driver file which files will be modified.
 Path to temporary folder for nvidia driver files which contains nvaci.inf.
 
 .LINK
-https://github.com/goodm2ice
+https://github.com/goodm2ice/nvidia-subsystem-rewriter
 
 #>
+#Requires -RunAsAdministrator
+[CmdletBinding(DefaultParameterSetName = 'Install')]
 param (
+    [Parameter(Mandatory, ParameterSetName = 'Print', Position = 0)]
+    [switch]$Print,
+
+    [Parameter(ParameterSetName = 'Install')]
     [string]$CardName = 'RTX 3050 Laptop GPU',
+    [Parameter(ParameterSetName = 'Install')]
     [string]$Subsystem = '11331043',
+    [Parameter(ParameterSetName = 'Install')]
     [string]$Dev = '25A2',
+    [Parameter(ParameterSetName = 'Install')]
     [string]$DriverFile = './591.59-notebook-win10-win11-64bit-international-dch-whql.exe',
+    [Parameter(ParameterSetName = 'Install')]
     [string]$DriverTmpPath = 'C:\NVIDIA_TMP',
-    [switch]$Print = $false,
+    [Parameter(ParameterSetName = 'Install')]
     [string]$NvidiaVendorID = '10DE'
 )
 

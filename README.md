@@ -2,7 +2,10 @@
 Short script that rewrite videocard subsystem during NVIDIA driver installation
 
 ```powershell
-Install-NvidiaDriver [-Print] [[-CardName] <string>] [[-Subsystem] <string>] [[-Dev] <string>] [[-DriverFile] <string>] [[-DriverTmpPath] <string>] [[-NvidiaVendorID] <string>]
+    C:\Users\Мышь\Desktop\Install-NvidiaDriver.ps1 -Print [<CommonParameters>]
+
+    C:\Users\Мышь\Desktop\Install-NvidiaDriver.ps1 [-CardName <String>] [-Subsystem <String>] [-Dev <String>] [-DriverF
+    ile <String>] [-DriverTmpPath <String>] [-NvidiaVendorID <String>] [<CommonParameters>]
 
 PARAMETERS:
     -Print [<SwitchParameter>]
