@@ -59,25 +59,25 @@ function Main {
         exit 0
     }
 
-    $NvaciPath="$DriverTmpPath\Display.Driver\nvaci.inf"
+    $NvaciPath="$DriverTmpPath\Display.Driver\nvaci.inf" # Путь к перезаписываемому файлу
     $installer_pid = $null
 
     
-    $done = $false
-    try {
+    $done = $false # Флаг успешного завершения кода
+    try { # Отслеживаем Ctrl+C и ошибки
         Write-Host "Starting driver file..."
         Write-Host "!!DON'T TOUCH DRIVER WINDOWS!!" -BackgroundColor Yellow -ForegroundColor Black
-        $installer_pid = (Start-Process $DriverFile -ErrorAction SilentlyContinue -PassThru).Id
+        $installer_pid = (Start-Process $DriverFile -ErrorAction SilentlyContinue -PassThru).Id # Запускаем драйвер
 
         Write-Host "Waiting for driver to start..."
-        if (!(WaitProcess -ProcessPid $installer_pid)) {
+        if (!(WaitProcess -ProcessPid $installer_pid)) { # Ждём запуска процесса
             Write-Host "Process start timeout!" -ForegroundColor Red
             exit 1
         }
-        ReplacePath -ProcessID $installer_pid -TmpPath $DriverTmpPath
-        WaitFile -FilePath $NvaciPath -ProcessPid $installer_pid
-        EditNvaciFile -Path $NvaciPath -CardName $CardName -Dev $Dev -Subsystem $Subsystem
-        $done = $true
+        ReplacePath -ProcessID $installer_pid -TmpPath $DriverTmpPath # Имитируем ввод пути пользователем
+        WaitFile -FilePath $NvaciPath -ProcessPid $installer_pid # Ждём появления файла
+        EditNvaciFile -Path $NvaciPath -CardName $CardName -Dev $Dev -Subsystem $Subsystem # Заменяем данные в файле
+        $done = $true # Отмечаем успешное завершение чтобы не закрывать установщик при выходе
         Write-Host "Work done! Continue setup as usual!" -BackgroundColor Green -ForegroundColor Black
     } finally {
         if (!$done) {
@@ -87,13 +87,15 @@ function Main {
     }
 }
 
-function PrintDevices {
+function PrintDevices { # Вывод списка PCI устройств от Nvidia  
     $devices = Get-PnpDevice -PresentOnly | Where-Object {
-        ($_.InstanceId -match "^PCI\\") -and
-        ($_.InstanceId -match "VEN_$NvidiaVendorID") -and
-        ($_.InstanceId -match "DEV_(\w+)") -and
-        ($_.InstanceId -match "SUBSYS_(\w+)")
+        ($_.InstanceId -match "^PCI\\") -and # Только PCI
+        ($_.InstanceId -match "VEN_$NvidiaVendorID") -and # Только Nvidia
+        ($_.InstanceId -match "DEV_(\w+)") -and # Имеет запись DEV
+        ($_.InstanceId -match "SUBSYS_(\w+)") # Имеет запись SUBSYS
     }
+
+    # @(TrueValue, FalseValue)[!condition] -- Замена тернарному оператору
 
     Write-Host "Available devices:"
     $idx = 0
