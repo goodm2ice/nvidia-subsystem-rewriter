@@ -97,19 +97,19 @@ function PrintDevices {
 
     Write-Host "Available devices:"
     $idx = 0
-    foreach ($_ in $devices) {
+    foreach ($device in $devices) {
         Write-Host ("   [{0,2}] NAME: " -f $idx) -NoNewline
-        Write-Host $_.Name -ForegroundColor Cyan
+        Write-Host $device.Name -ForegroundColor Cyan
         Write-Host "        STATUS: " -NoNewline
-        Write-Host $_.Status -ForegroundColor $(@("Green", "Red")[$_.Status -ne 'OK'])
+        Write-Host $device.Status -ForegroundColor $(@("Green", "Red")[$device.Status -ne 'OK'])
         Write-Host "        CLASS: " -NoNewline
-        Write-Host $_.PNPClass -ForegroundColor $(@("Green", "Red")[$_.PNPClass -ne 'Display'])
+        Write-Host $device.PNPClass -ForegroundColor $(@("Green", "Red")[$device.PNPClass -ne 'Display'])
 
-        $_.DeviceID -match "DEV_(\w+)" > $null
+        $device.DeviceID -match "DEV_(\w+)" > $null
         Write-Host "        DEV: " -NoNewline
         Write-Host $Matches[1] -ForegroundColor Blue
 
-        $_.DeviceID -match "SUBSYS_(\w+)" > $null
+        $device.DeviceID -match "SUBSYS_(\w+)" > $null
         Write-Host "        SUBSYSTEM: " -NoNewline
         Write-Host $Matches[1] -ForegroundColor Blue
         Write-Host ""
@@ -156,7 +156,7 @@ function WaitProcess {
         if (Get-Process -Id $ProcessID -ErrorAction SilentlyContinue) {
             return $true
         }
-        if (((Get-Date) - $StartTime).TotalSeconds > 15) {
+        if (((Get-Date) - $StartTime).TotalSeconds -gt 15) {
             return $false
         }
         Start-Sleep -Milliseconds 200
@@ -212,13 +212,15 @@ function EditNvaciFile {
     
     $old_line = (Select-String -Path $Path -Pattern "%$record%" | Select-Object -First 1).Line
     $new_line = $old_line -replace 'SUBSYS_\w+', "SUBSYS_$Subsystem"
-    
-    (Get-Content $Path).Replace($old_line, $new_line) | Set-Content $Path
+
+    $new_record = $record -replace "\w{4}\.\w{4}$", "$($Subsystem.Substring(0, 4)).$($Subsystem.Substring(4))"
+
+    (Get-Content $Path).Replace($old_line, $new_line).Replace($record, $new_record) | Set-Content $Path
     Write-Host "File edited!" -ForegroundColor Yellow
     Write-Host
     
     Write-Host $old_lines -Separator "`n" -ForegroundColor Red
-    Write-Host (Select-String -Path $Path -Pattern $record | ForEach-Object { '+++{0,10} :: {1}' -f $_.LineNumber, $_.Line }) -Separator "`n" -ForegroundColor Green
+    Write-Host (Select-String -Path $Path -Pattern $new_record | ForEach-Object { '+++{0,10} :: {1}' -f $_.LineNumber, $_.Line }) -Separator "`n" -ForegroundColor Green
     Write-Host
 }
 
